@@ -7,19 +7,30 @@ colors = SimpleNamespace(
     secondary="#1A1A1A", # App BG
     secondary_2="#292929", # Darker secondary BH
     secondary_3="#2D1A1E", # Maroon BG
+    secondary_3_2="#3a161e", # Brighter Maroon BG (for hover)
     white="#EFEFEF"
 )
 
 font_sizes = SimpleNamespace(
-    large=24,
-    medium=20
+    large=20,
+    medium=16
+)
+
+margins = SimpleNamespace(
+    xl=10,
+    large=9,
+    medium=8,
+    medium_small=7,
+    small=6,
+    xs=5
 )
 
 constants = SimpleNamespace(
     colors=colors,
     font_sizes=font_sizes,
-    default_width=400,
-    default_height=600,
+    margins=margins,
+    default_width=375,
+    default_height=645,
     scroll_bar_thickness=5,
     scroll_bar_radius=10
 )

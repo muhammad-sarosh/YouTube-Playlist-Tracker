@@ -1,7 +1,9 @@
 import flet as ft
+from types import SimpleNamespace
+from typing import Callable
 
 class ConfirmButton(ft.ElevatedButton):
-    def __init__(self, text, callback, constants, width=95, expand=False):
+    def __init__(self, text:str, callback:Callable, constants:SimpleNamespace, width:int=95, expand:bool=False):
         super().__init__()
         self.text = text
         self.color = "white"
@@ -20,7 +22,7 @@ class ConfirmButton(ft.ElevatedButton):
 
 
 class CancelButton(ft.OutlinedButton):
-    def __init__(self, text, callback, constants, width=95, expand=False):
+    def __init__(self, text:str, callback:Callable, constants:SimpleNamespace, width:int=95, expand:bool=False):
         super().__init__()
         self.content = ft.Text(text, color=constants.colors.primary)
         self.width = width
@@ -34,7 +36,7 @@ class CancelButton(ft.OutlinedButton):
         self.on_click = callback
 
 class ResizeDialog(ft.AlertDialog):
-    def __init__(self, page, DATA_FILE, constants, save_dimensions_callback):
+    def __init__(self, page:ft.Page, DATA_FILE:str, constants:SimpleNamespace, save_dimensions_callback:Callable):
         super().__init__()
         self.page = page
         self.DATA_FILE = DATA_FILE
@@ -138,3 +140,46 @@ class ResizeDialog(ft.AlertDialog):
         self.page.window.height = self.height_field.value
         self.page.window.center()
         self.close_resize_dialog()
+
+class SegmentedControlButton(ft.ElevatedButton):
+    def __init__(self, text:str, default_bgcolor, hover_bgcolor, constants:SimpleNamespace):
+        super().__init__()
+        self.text = text
+        self.expand = True
+        self.style=ft.ButtonStyle(
+            color=constants.colors.white,
+            bgcolor={
+                ft.ControlState.DEFAULT: default_bgcolor,
+                ft.ControlState.HOVERED: hover_bgcolor
+            },
+            padding=13,
+            shape=ft.RoundedRectangleBorder(radius=8),
+            shadow_color=ft.Colors.TRANSPARENT,
+            text_style=ft.TextStyle(
+                size=constants.font_sizes.medium,
+                font_family="NunitoSans",
+                weight=ft.FontWeight.W_600
+            )
+        )
+
+class SegmentedControl(ft.Container):
+    def __init__(self, activated_button_args:dict, deactivated_button_args:dict, constants:SimpleNamespace):
+        super().__init__()
+        activated_button = SegmentedControlButton(
+            text=activated_button_args['text'],
+            default_bgcolor=activated_button_args['default_bgcolor'],
+            hover_bgcolor=activated_button_args['hover_bgcolor'],
+            constants=constants
+        )
+        deactivated_button = SegmentedControlButton(
+            text=deactivated_button_args['text'],
+            default_bgcolor=deactivated_button_args['default_bgcolor'],
+            hover_bgcolor=deactivated_button_args['hover_bgcolor'],
+            constants=constants
+        )
+        row = ft.Row([activated_button, deactivated_button], spacing=3)
+
+        self.content = row
+        self.padding=5
+        self.bgcolor=constants.colors.secondary_3
+        self.border_radius=8
