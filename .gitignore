@@ -2,3 +2,4 @@ __pycache__/
 windows_env/
 linux_env/
 data/
+test.py

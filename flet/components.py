@@ -153,7 +153,7 @@ class SegmentedControlButton(ft.ElevatedButton):
                 ft.ControlState.HOVERED: hover_bgcolor
             },
             padding=13,
-            shape=ft.RoundedRectangleBorder(radius=8),
+            shape=ft.RoundedRectangleBorder(radius=constants.border_radius),
             shadow_color=ft.Colors.TRANSPARENT,
             text_style=ft.TextStyle(
                 size=constants.font_sizes.medium,
@@ -180,6 +180,19 @@ class SegmentedControl(ft.Container):
         row = ft.Row([activated_button, deactivated_button], spacing=3)
 
         self.content = row
-        self.padding=5
+        self.padding = 5
         self.bgcolor=constants.colors.secondary_3
-        self.border_radius=8
+        self.border_radius=constants.border_radius
+        self.margin = ft.margin.only(bottom=constants.margins.xl)
+
+class CustomTextField(ft.TextField):
+    def __init__(self, hint_text: str, constants:SimpleNamespace):
+        super().__init__()
+        self.hint_text = hint_text
+        self.expand = True
+        self.border_radius = constants.border_radius
+        self.bgcolor = constants.colors.secondary_3
+        self.border_color = constants.colors.secondary_3_3
+        self.cursor_color = constants.colors.primary
+        self.hover_color = constants.colors.secondary_3
+        

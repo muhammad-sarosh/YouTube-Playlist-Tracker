@@ -67,6 +67,8 @@ def main(page: ft.Page):
         "IBMPlexMono": "fonts/IBMPlexMono-Regular.ttf"
     }
     page.theme = ft.Theme(
+        font_family="NunitoSans",
+        color_scheme_seed=constants.colors.primary,
         scrollbar_theme=ft.ScrollbarTheme(
             thickness=constants.scroll_bar_thickness,
             radius=constants.scroll_bar_radius,
@@ -80,7 +82,7 @@ def main(page: ft.Page):
     # Top row
     heading = ft.Text(
         "Playlist Calculator",
-        font_family="NunitoSans",
+        color=constants.colors.white,
         weight=ft.FontWeight.W_700,
         size=constants.font_sizes.large,
         text_align=ft.TextAlign.CENTER,
@@ -118,8 +120,29 @@ def main(page: ft.Page):
         },
         constants=constants
     )
+    
+    playlist_link_dropdown = ft.Dropdown(
+        hint_text="Saved Playlists",
+        hint_style=ft.TextStyle(weight=ft.FontWeight.W_500),
+        text_style=ft.TextStyle(weight=ft.FontWeight.W_500),
+        bgcolor=constants.colors.secondary_3,
+        border_color=constants.colors.secondary_3_3,
+        border_radius = constants.border_radius,
+        hover_color = constants.colors.secondary_3,
+        fill_color=constants.colors.secondary_3,
+        expand=True,
+        enable_filter=True,
+        filled=True,
+        editable=True,
+        options=[
+            ft.dropdown.Option(key="https://youtu.be/mth501_link", text="MTH501"),
+            ft.dropdown.Option(key="https://youtu.be/mth501_link", text="ENG201"),
+            ft.dropdown.Option(key="https://youtu.be/mth501_link", text="CS101"),
+            ft.dropdown.Option(key="https://youtu.be/mth501_link", text="MGT301"),
+        ]
+    )
 
-    page.add(top_row_container, switch_mode_container)
+    page.add(top_row_container, switch_mode_container, playlist_link_dropdown)
     
 
 ft.app(target=main, assets_dir="assets/")
