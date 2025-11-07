@@ -5,7 +5,7 @@ import json
 from types import SimpleNamespace
 
 from constants import constants
-from components import ResizeDialog, SegmentedControl
+from components import ResizeDialog, SegmentedControl, CustomHeading, Timestamp, CustomTimeToWatchColumn, CustomNumbersOnlyField, CustomContainer
 
 def open_resize_dialog(page:ft.Page, resize_dialog:ft.AlertDialog, e):
     page.open(resize_dialog)
@@ -120,9 +120,11 @@ def main(page: ft.Page):
         },
         constants=constants
     )
+
     
+    # Dropdown
     playlist_link_dropdown = ft.Dropdown(
-        hint_text="Saved Playlists",
+        hint_text="Playlist Link",
         hint_style=ft.TextStyle(weight=ft.FontWeight.W_500),
         text_style=ft.TextStyle(weight=ft.FontWeight.W_500),
         bgcolor=constants.colors.secondary_3,
@@ -142,7 +144,104 @@ def main(page: ft.Page):
         ]
     )
 
-    page.add(top_row_container, switch_mode_container, playlist_link_dropdown)
+
+    # Starting Video | Timestamp
+    starting_video_heading = CustomHeading(constants=constants, text="Starting Video | Timestamp")
+
+    starting_video_field = CustomNumbersOnlyField(constants=constants)
+
+    timestamp_video_field = Timestamp(constants=constants)
+
+    watch_duration_mode_column = ft.Column(
+        [
+            starting_video_heading,
+            ft.Row(
+                [starting_video_field, timestamp_video_field]
+            )
+        ]
+    )
+
+    
+    # Time to watch
+    time_to_watch_heading = CustomHeading(constants=constants, text='Time to Watch')
+
+    hours_column = CustomTimeToWatchColumn(constants=constants, heading_text='H')
+    minutes_column = CustomTimeToWatchColumn(constants=constants, heading_text='M')
+    seconds_column = CustomTimeToWatchColumn(constants=constants, heading_text='S')
+
+    def colon():
+        return ft.Container(
+                ft.Text(':', weight=ft.FontWeight.W_500),
+                margin=ft.margin.only(top=25)
+            )
+
+    time_to_watch_row = ft.Row(
+        [
+            hours_column,
+            colon(),
+            minutes_column,
+            colon(),
+            seconds_column
+        ]
+    )
+
+    time_to_watch_column = ft.Column(
+        [
+            time_to_watch_heading,
+            time_to_watch_row
+        ]
+    )
+
+
+    # Calculate Button
+    calculate_button = ft.ElevatedButton(
+        text='Calculate',
+        style=ft.ButtonStyle(
+            bgcolor=constants.colors.primary,
+            alignment=ft.alignment.center,
+            padding=ft.Padding(6, 18, 6, 18),
+            shape=ft.RoundedRectangleBorder(radius=constants.border_radius),
+            text_style=ft.TextStyle(
+                color=constants.colors.white,
+                weight=ft.FontWeight.W_700,
+                size=constants.font_sizes.medium
+            )
+        ),
+        expand=True
+    )
+
+    calculate_button_row = ft.Row(
+        [calculate_button]
+    )
+
+
+    # Result
+    result_heading = CustomHeading(constants=constants, text='Result')
+    result_heading.size = constants.font_sizes.large
+
+    result_content_column = ft.Column(
+        [
+            ft.Text('Playlist Name: MTH501 Linear Algebra')
+        ]
+    )
+
+    result_container = CustomContainer(constants=constants)
+    result_container.content = result_content_column
+
+    result_container_row = ft.Row(
+        [result_container],
+        expand=True
+    )
+
+    result_column = ft.Column(
+        [
+            result_heading,
+            result_container_row
+        ],
+        expand=True
+    )
+
+    page.add(top_row_container, switch_mode_container, playlist_link_dropdown, watch_duration_mode_column, time_to_watch_column, calculate_button_row, result_column)
     
 
 ft.app(target=main, assets_dir="assets/")

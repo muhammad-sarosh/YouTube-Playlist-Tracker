@@ -24,7 +24,7 @@ class ConfirmButton(ft.ElevatedButton):
 class CancelButton(ft.OutlinedButton):
     def __init__(self, text:str, callback:Callable, constants:SimpleNamespace, width:int=95, expand:bool=False):
         super().__init__()
-        self.content = ft.Text(text, color=constants.colors.primary)
+        self.content = ft.Text(text, color=constants.colors.primary, weight=ft.FontWeight.W_700)
         self.width = width
         self.expand = expand
         self.style = ft.ButtonStyle(
@@ -193,6 +193,120 @@ class CustomTextField(ft.TextField):
         self.border_radius = constants.border_radius
         self.bgcolor = constants.colors.secondary_3
         self.border_color = constants.colors.secondary_3_3
-        self.cursor_color = constants.colors.primary
         self.hover_color = constants.colors.secondary_3
-        
+
+class CustomContainer(ft.Container):
+    def __init__(self, constants:SimpleNamespace):
+        super().__init__()
+        self.expand = True
+        self.border_radius = constants.border_radius
+        self.bgcolor = constants.colors.secondary_3
+        self.border = ft.border.all(1, color=constants.colors.secondary_3_3)
+        self.hover_color = constants.colors.secondary_3
+        self.padding = 8
+
+class NumbersOnlyField(ft.TextField):
+    def __init__(self, constants: SimpleNamespace, value=0, max_value=None):
+        super().__init__()
+        self.value=f"{value:02}"
+        self.max_value = max_value
+        self.content_padding=ft.Padding(0, 8, 0, 8)
+        self.text_style=ft.TextStyle(weight=ft.FontWeight.W_500, size=constants.font_sizes.medium)
+        self.keyboard_type=ft.KeyboardType.NUMBER
+        self.input_filter=ft.NumbersOnlyInputFilter()
+        self.width = 30
+        self.text_align = ft.TextAlign.CENTER
+        self.border_color = 'transparent'
+        self.text_style = ft.TextStyle(font_family='IBMPlexMono')
+        self.on_change = self.handle_change
+
+    def handle_change(self, e):
+        # To make sure program doesnt crash if invalid input in number field
+        try:
+            val = int(self.value or 0)
+        except ValueError:
+            val = 0
+
+        if self.max_value is not None:
+            if val > self.max_value:
+                val = self.max_value
+            elif val < 0:
+                val = 0
+
+        self.value = f"{val:02}"
+
+        self.parent.update()
+
+class CustomNumbersOnlyField(NumbersOnlyField):
+    def __init__(self, constants):
+        super().__init__(constants=constants)
+        self.expand = True
+        self.border_radius = constants.border_radius
+        self.constants = constants
+        self.bgcolor = constants.colors.secondary_3
+        self.border_color = constants.colors.secondary_3_3
+        self.on_hover = self.handle_hover
+
+    def handle_hover(self, e:ft.HoverEvent):
+        if e.data == "true":
+            self.bgcolor = self.constants.colors.secondary_3_2
+        else:
+            self.bgcolor = self.constants.colors.secondary_3
+        self.update()
+
+class Timestamp(ft.Container):
+    def __init__(self, constants):
+        super().__init__()
+        self.hours_field = NumbersOnlyField(constants=constants)
+        self.minutes_field = NumbersOnlyField(constants=constants, max_value=59)
+        self.seconds_field = NumbersOnlyField(constants=constants, max_value=59)
+
+        self.constants = constants
+
+        self.content = ft.Row(
+            [
+                self.hours_field,
+                ft.Text(":", weight=ft.FontWeight.W_500),
+                self.minutes_field,
+                ft.Text(":", weight=ft.FontWeight.W_500),
+                self.seconds_field
+            ],
+            alignment=ft.MainAxisAlignment.CENTER
+        )
+
+        self.border_radius = constants.border_radius
+        self.bgcolor = constants.colors.secondary_3
+        self.border = ft.border.all(1, constants.colors.secondary_3_3)
+        self.expand = 5
+
+        self.on_hover = self.handle_hover
+
+    def handle_hover(self, e:ft.HoverEvent):
+        if e.data == "true":
+            self.bgcolor = self.constants.colors.secondary_3_2
+        else:
+            self.bgcolor = self.constants.colors.secondary_3
+        self.update()
+
+class CustomHeading(ft.Text):
+    def __init__(self, constants, text):
+        super().__init__()
+        self.value = text
+        self.size = constants.font_sizes.medium
+        self.weight = ft.FontWeight.W_600
+
+class CustomTimeToWatchColumn(ft.Column):
+    def __init__(self, constants, heading_text, max_value=None):
+        super().__init__()
+        heading = CustomHeading(constants=constants, text=heading_text)
+        heading.weight = ft.FontWeight.W_500
+
+        input_field = CustomNumbersOnlyField(constants=constants)
+        input_field.width = 50
+
+        self.controls = [
+            heading,
+            input_field
+        ]
+        self.horizontal_alignment = ft.CrossAxisAlignment.CENTER
+
