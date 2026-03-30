@@ -45,7 +45,7 @@ sizes = SimpleNamespace(
 
 window = SimpleNamespace(
     default_width=375,
-    default_height=700,
+    default_height=740,
     min_width=340,
     min_height=560,
 )
