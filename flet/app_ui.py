@@ -6,6 +6,7 @@ from components import (
     DurationInput,
     ModeToggle,
     NumberField,
+    NumberStepper,
     PrimaryButton,
     ReservedMessage,
     SectionLabel,
@@ -278,6 +279,11 @@ class AppUIBuildMixin:
             allow_empty=True,
             monospace=True,
             hint_text="-",
+        )
+        self.playlist_bookmark_video_stepper = NumberStepper(
+            constants,
+            on_increment=self.increment_playlist_bookmark_video,
+            on_decrement=self.decrement_playlist_bookmark_video,
         )
         self.playlist_bookmark_timestamp = TimestampInput(constants)
         self.playlist_autofill_checkbox = ft.Checkbox(

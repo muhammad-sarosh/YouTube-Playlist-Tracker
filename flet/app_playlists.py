@@ -22,6 +22,12 @@ WEEKDAY_LABELS = {day: day.title() for day in WEEKDAY_KEYS}
 
 
 class PlaylistManagementMixin:
+    def increment_playlist_bookmark_video(self, _event=None):
+        self.playlist_bookmark_video_field.increment()
+
+    def decrement_playlist_bookmark_video(self, _event=None):
+        self.playlist_bookmark_video_field.decrement()
+
     def _link_field_for_mode(self, mode: str) -> StyledTextField:
         if mode == "watch":
             return self.watch_link_field
@@ -506,7 +512,14 @@ class PlaylistManagementMixin:
                 self._gap(8),
                 ft.Row(
                     controls=[
-                        self.playlist_bookmark_video_field,
+                        ft.Row(
+                            controls=[
+                                self.playlist_bookmark_video_field,
+                                self.playlist_bookmark_video_stepper,
+                            ],
+                            spacing=6,
+                            tight=True,
+                        ),
                         self.playlist_bookmark_timestamp,
                     ],
                     spacing=8,

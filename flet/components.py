@@ -225,6 +225,29 @@ class NumberField(ft.TextField):
     def reset(self):
         self.value = ""
 
+    def increment(self, step: int = 1):
+        raw = (self.value or "").strip()
+        if raw:
+            value = int(raw) + step
+        else:
+            value = self.min_value if self.min_value is not None else 0
+        if self.max_value is not None:
+            value = min(value, self.max_value)
+        if self.min_value is not None:
+            value = max(value, self.min_value)
+        self._set_value(self._format_for_display(value))
+
+    def decrement(self, step: int = 1):
+        raw = (self.value or "").strip()
+        if not raw:
+            return
+        value = int(raw) - step
+        if self.max_value is not None:
+            value = min(value, self.max_value)
+        if self.min_value is not None:
+            value = max(value, self.min_value)
+        self._set_value(self._format_for_display(value))
+
 
 class InlineNumberField(NumberField):
     def __init__(
@@ -407,6 +430,95 @@ class DurationInput(ft.Row):
         self.hours.reset()
         self.minutes.reset()
         self.seconds.reset()
+
+
+class NumberStepper(ft.Container):
+    def __init__(
+        self,
+        constants: SimpleNamespace,
+        *,
+        on_increment: Callable,
+        on_decrement: Callable,
+    ):
+        super().__init__()
+        self.constants = constants
+        self._top = self._build_half(
+            ft.Icons.KEYBOARD_ARROW_UP_ROUNDED,
+            "Increase",
+            on_increment,
+            top_half=True,
+        )
+        self._bottom = self._build_half(
+            ft.Icons.KEYBOARD_ARROW_DOWN_ROUNDED,
+            "Decrease",
+            on_decrement,
+            top_half=False,
+        )
+
+        self.width = 22
+        self.height = constants.sizes.input_height
+        self.bgcolor = constants.colors.surface
+        self.border = ft.border.all(1, constants.colors.border)
+        self.border_radius = constants.sizes.control_radius
+        self.clip_behavior = ft.ClipBehavior.HARD_EDGE
+        self.content = ft.Column(
+            controls=[
+                self._top,
+                ft.Container(height=1, bgcolor=constants.colors.border),
+                self._bottom,
+            ],
+            spacing=0,
+            tight=True,
+        )
+
+    def _build_half(
+        self,
+        icon_name: str,
+        tooltip: str,
+        on_click: Callable,
+        *,
+        top_half: bool,
+    ) -> ft.Container:
+        icon = ft.Icon(icon_name, size=11, color=self.constants.colors.text_muted)
+        control = ft.Container(
+            height=(self.constants.sizes.input_height - 1) / 2,
+            alignment=ft.alignment.center,
+            tooltip=tooltip,
+            content=icon,
+            border_radius=ft.border_radius.only(
+                top_left=self.constants.sizes.control_radius if top_half else 0,
+                top_right=self.constants.sizes.control_radius if top_half else 0,
+                bottom_left=self.constants.sizes.control_radius if not top_half else 0,
+                bottom_right=self.constants.sizes.control_radius
+                if not top_half
+                else 0,
+            ),
+        )
+
+        def _handle_hover(event, half=control, half_icon=icon):
+            hovered = str(event.data).lower() == "true"
+            half.bgcolor = (
+                self.constants.colors.surface_hover
+                if hovered
+                else ft.Colors.TRANSPARENT
+            )
+            half_icon.color = (
+                self.constants.colors.text
+                if hovered
+                else self.constants.colors.text_muted
+            )
+            if half.page is not None:
+                half.update()
+
+        def _handle_click(event, half=control):
+            half.bgcolor = ft.Colors.TRANSPARENT
+            if half.page is not None:
+                half.update()
+            on_click(event)
+
+        control.on_hover = _handle_hover
+        control.on_click = _handle_click
+        return control
 
 
 class PrimaryButton(ft.ElevatedButton):
