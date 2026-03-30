@@ -481,6 +481,7 @@ class AppUIBuildMixin:
             bottom_right=constants.sizes.control_radius if is_last else 0,
         )
         row = ft.Container(
+            height=constants.sizes.input_height,
             bgcolor=constants.colors.accent_soft if selected else constants.colors.surface,
             border_radius=row_radius,
             padding=ft.Padding(14, 11, 14, 11),
@@ -560,11 +561,14 @@ class AppUIBuildMixin:
                     )
                 )
         self.dropdown_list.controls = list_controls
+        visible_item_limit = 5
+        item_height = constants.sizes.input_height
         divider_count = max(len(self.saved_playlists) - 1, 0)
-        list_height = len(self.saved_playlists) * 44 + divider_count
-        if list_height > 220:
-            self.dropdown_list.height = 220
-            self.dropdown_panel.height = 220
+        list_height = len(self.saved_playlists) * item_height + divider_count
+        max_panel_height = visible_item_limit * item_height + (visible_item_limit - 1)
+        if len(self.saved_playlists) > visible_item_limit:
+            self.dropdown_list.height = max_panel_height
+            self.dropdown_panel.height = max_panel_height
         else:
             self.dropdown_list.height = None
             self.dropdown_panel.height = None
