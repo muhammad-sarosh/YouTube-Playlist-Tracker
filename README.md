@@ -19,6 +19,8 @@ Download the latest Windows release here: [YouTube Playlist Tracker v1.0.0](http
 - Run it on Windows.
 - No Python setup is required for normal use.
 
+If Windows, SmartScreen, or your browser warns about the `.exe`, that can happen because the app is distributed as an external unsigned download rather than through the Microsoft Store. If you downloaded it from this repo's official Releases page, you can usually choose `Keep`, `More info`, or `Run anyway` depending on which prompt appears.
+
 ## Features
 
 - `Watch Duration` mode: enter a playlist link, starting video, starting timestamp, and target watch time to find exactly where to stop.
