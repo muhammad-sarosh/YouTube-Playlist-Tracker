@@ -1,312 +1,662 @@
-import flet as ft
+from __future__ import annotations
+
 from types import SimpleNamespace
 from typing import Callable
 
-class ConfirmButton(ft.ElevatedButton):
-    def __init__(self, text:str, callback:Callable, constants:SimpleNamespace, width:int=95, expand:bool=False):
-        super().__init__()
-        self.text = text
-        self.color = "white"
-        self.width = width
-        self.expand = expand
-        self.bgcolor = {
-            ft.ControlState.DEFAULT: constants.colors.primary_2,
-            ft.ControlState.HOVERED: constants.colors.primary_2
-        }
-        self.style = ft.ButtonStyle(
-            alignment=ft.alignment.center,
-            shape=ft.RoundedRectangleBorder(radius=12),
-            padding=ft.Padding(6, 14, 6, 16)
+import flet as ft
+
+
+def _button_shape(radius: int) -> ft.RoundedRectangleBorder:
+    return ft.RoundedRectangleBorder(radius=radius)
+
+
+class SectionLabel(ft.Text):
+    def __init__(self, text: str, constants: SimpleNamespace):
+        super().__init__(
+            value=text,
+            size=constants.font_sizes.section,
+            weight=ft.FontWeight.W_600,
+            color=constants.colors.text,
         )
-        self.on_click = callback
 
 
-class CancelButton(ft.OutlinedButton):
-    def __init__(self, text:str, callback:Callable, constants:SimpleNamespace, width:int=95, expand:bool=False):
-        super().__init__()
-        self.content = ft.Text(text, color=constants.colors.primary, weight=ft.FontWeight.W_700)
-        self.width = width
-        self.expand = expand
-        self.style = ft.ButtonStyle(
-            alignment=ft.alignment.center,
-            shape=ft.RoundedRectangleBorder(radius=12),
-            padding=ft.Padding(6, 14, 6, 16),
-            side=ft.BorderSide(width=1.5, color=constants.colors.primary)
+class ReservedMessage(ft.Text):
+    def __init__(self, constants: SimpleNamespace):
+        super().__init__(
+            value=" ",
+            size=constants.font_sizes.small,
+            color=constants.colors.danger,
+            height=16,
         )
-        self.on_click = callback
 
-class ResizeDialog(ft.AlertDialog):
-    def __init__(self, page:ft.Page, DATA_FILE:str, constants:SimpleNamespace, save_dimensions_callback:Callable):
+    def set_message(self, message: str | None):
+        self.value = message or " "
+
+
+class StyledTextField(ft.TextField):
+    def __init__(self, hint_text: str, constants: SimpleNamespace, value: str = ""):
         super().__init__()
-        self.page = page
-        self.DATA_FILE = DATA_FILE
+        self.value = value
+        self.hint_text = hint_text
+        self.hint_style = ft.TextStyle(
+            color=constants.colors.text_subtle,
+            size=constants.font_sizes.body,
+        )
+        self.text_style = ft.TextStyle(
+            color=constants.colors.text,
+            size=constants.font_sizes.body,
+            weight=ft.FontWeight.W_400,
+        )
+        self.cursor_color = constants.colors.text
+        self.selection_color = ft.Colors.with_opacity(0.24, constants.colors.accent)
+        self.enable_interactive_selection = True
+        self.always_call_on_tap = True
+        self.autocorrect = False
+        self.enable_suggestions = False
+        self.border = ft.InputBorder.OUTLINE
+        self.border_radius = constants.sizes.control_radius
+        self.border_color = constants.colors.border
+        self.focused_border_color = constants.colors.accent
+        self.filled = True
+        self.bgcolor = constants.colors.surface
+        self.height = constants.sizes.input_height
+        self.content_padding = ft.Padding(14, 8, 14, 8)
+        self.expand = True
+
+
+class NumberField(ft.TextField):
+    def __init__(
+        self,
+        constants: SimpleNamespace,
+        *,
+        width: int | None = None,
+        min_value: int | None = 0,
+        max_value: int | None = None,
+        default_number: int | None = 0,
+        initial_value: int | None = None,
+        allow_empty: bool = False,
+        monospace: bool = True,
+        pad_to: int | None = None,
+        centered: bool = True,
+        borderless: bool = False,
+        bgcolor: str | None = None,
+        expand: bool | int | None = None,
+        hint_text: str | None = None,
+    ):
+        super().__init__()
         self.constants = constants
-        self.save_dimensions_callback = save_dimensions_callback
+        self.min_value = min_value
+        self.max_value = max_value
+        self.default_number = default_number
+        self.allow_empty = allow_empty
+        self.pad_to = pad_to
+        self._centered = centered
+        self._focused = False
+        self._suspend_change = False
+        self.on_focus_changed: Callable[[bool], None] | None = None
 
-        self.width_field = ft.TextField(
-            hint_text="Width",
-            autofocus=True,
-            bgcolor=self.constants.colors.secondary_3,
-            cursor_color=self.constants.colors.white,
-            keyboard_type=ft.KeyboardType.NUMBER,
-            input_filter=ft.NumbersOnlyInputFilter(),
-            border=ft.InputBorder.OUTLINE,
-            border_radius=10,
-            border_color="transparent",
-            border_width=1.3
+        self.width = width
+        self.expand = expand
+        self.height = constants.sizes.input_height
+        self.cursor_color = constants.colors.text
+        self.selection_color = ft.Colors.with_opacity(0.24, constants.colors.accent)
+        self.keyboard_type = ft.KeyboardType.NUMBER
+        self.input_filter = ft.NumbersOnlyInputFilter()
+        self.border = ft.InputBorder.OUTLINE
+        self.border_radius = constants.sizes.control_radius
+        self.border_color = "transparent" if borderless else constants.colors.border
+        self.focused_border_color = (
+            "transparent" if borderless else constants.colors.accent
         )
-        self.height_field = ft.TextField(
-            hint_text="Height",
-            autofocus=True,
-            bgcolor=self.constants.colors.secondary_3,
-            cursor_color=self.constants.colors.white,
-            keyboard_type=ft.KeyboardType.NUMBER,
-            input_filter=ft.NumbersOnlyInputFilter(),
-            border=ft.InputBorder.OUTLINE,
-            border_radius=10,
-            border_color="transparent",
-            border_width=1.3
+        self.bgcolor = bgcolor if bgcolor is not None else constants.colors.surface
+        self.content_padding = ft.Padding(12, 8, 12, 8)
+        self.text_align = ft.TextAlign.CENTER if centered else ft.TextAlign.LEFT
+        self.text_style = ft.TextStyle(
+            color=constants.colors.text,
+            size=constants.font_sizes.number,
+            weight=ft.FontWeight.W_400,
+            font_family="IBMPlexMono" if monospace else "NunitoSans",
         )
-        resize_dialog_fields = ft.Row([ft.Container(self.width_field, expand=True), ft.Container(self.height_field, expand=True)])
-        use_current_button = ft.Container(
-            content=ft.TextButton(
-                "Use current",
-                style=ft.ButtonStyle(color="#aaaaaa", text_style=ft.TextStyle(size=12), padding=ft.Padding(2, 0, 2, 0), overlay_color="transparent"),
-                on_click=self.get_current_size,
-            ),
-            height=22
+        default_hint = (
+            self._format_for_display(default_number)
+            if default_number is not None
+            else ""
         )
-        reset_to_default_button = ft.Container(
-            content=ft.TextButton(
-                "Reset to default",
-                style=ft.ButtonStyle(color="#aaaaaa", text_style=ft.TextStyle(size=12), padding=ft.Padding(2, 0, 2, 0), overlay_color="transparent"),
-                on_click=self.get_default_size,
-            ),
-            height=22
+        self.hint_text = hint_text if hint_text is not None else default_hint
+        self.hint_style = ft.TextStyle(
+            color=ft.Colors.with_opacity(0.88, constants.colors.text),
+            size=constants.font_sizes.number,
+            weight=ft.FontWeight.W_400,
+            font_family="IBMPlexMono" if monospace else "NunitoSans",
         )
-        resize_dialog_column = ft.Column(
-            [resize_dialog_fields, use_current_button, reset_to_default_button],
-            spacing=0,
-            tight=True
+        self.value = (
+            ""
+            if initial_value is None
+            else self._format_for_display(initial_value)
         )
+        self.on_change = self._handle_change
+        self.on_focus = self._handle_focus
+        self.on_blur = self._handle_blur
 
-        # Alert Dialog
-        self.title = ft.Text("Resize Window", weight=ft.FontWeight.W_500)
-        self.bgcolor = self.constants.colors.secondary
-        self.content = resize_dialog_column
-        self.actions = [
-            ft.Row(
-                [
-                    CancelButton(text="Cancel", callback=self.close_resize_dialog, constants=self.constants, expand=True, width=None),
-                    ConfirmButton(text="Save", callback=self.save_dimensions, constants=self.constants, expand=True, width=None)
-                ],
-                spacing=10
-            )
-        ]
-    
-    def close_resize_dialog(self, e=None):
-        self.page.close(self)
-        self.width_field.value = ""
-        self.width_field.error_text = None
-        self.height_field.value = ""
-        self.height_field.error_text = None
-        self.page.update()
+    def _handle_focus(self, _event=None):
+        self._focused = True
+        if self.on_focus_changed is not None:
+            self.on_focus_changed(True)
 
-    def get_current_size(self, e):
-        self.width_field.value = int(self.page.window.width)
-        self.height_field.value = int(self.page.window.height)
-        self.page.update()
+    def _handle_blur(self, _event=None):
+        self._focused = False
+        if self.on_focus_changed is not None:
+            self.on_focus_changed(False)
+        self._normalize_on_exit()
+        if self.page is not None:
+            self.update()
 
-    def get_default_size(self, e):
-        self.width_field.value = self.constants.default_width
-        self.height_field.value = self.constants.default_height
-        self.page.update()
-
-    def save_dimensions(self, e):
-        error = False
-        if not str(self.width_field.value).strip():
-            self.width_field.error_text = " "
-            error = True
-        if not str(self.height_field.value).strip():
-            self.height_field.error_text = " "
-            error = True
-        if error:
-            self.page.update()
+    def _handle_change(self, _event=None):
+        if self._suspend_change:
             return
 
-        self.save_dimensions_callback(self.DATA_FILE, self.width_field.value, self.height_field.value)
+        raw = "".join(ch for ch in (self.value or "") if ch.isdigit())
+        if raw == "":
+            self._set_value("")
+            return
 
-        self.page.window.width = self.width_field.value
-        self.page.window.height = self.height_field.value
-        self.page.window.center()
-        self.close_resize_dialog()
+        value = int(raw)
+        if self.min_value is not None and value < self.min_value:
+            value = self.min_value
+        if self.max_value is not None and value > self.max_value:
+            value = self.max_value
 
-class SegmentedControlButton(ft.ElevatedButton):
-    def __init__(self, text:str, default_bgcolor, hover_bgcolor, constants:SimpleNamespace):
-        super().__init__()
-        self.text = text
-        self.expand = True
-        self.style=ft.ButtonStyle(
-            color=constants.colors.white,
-            bgcolor={
-                ft.ControlState.DEFAULT: default_bgcolor,
-                ft.ControlState.HOVERED: hover_bgcolor
-            },
-            padding=13,
-            shape=ft.RoundedRectangleBorder(radius=constants.border_radius),
-            shadow_color=ft.Colors.TRANSPARENT,
-            text_style=ft.TextStyle(
-                size=constants.font_sizes.medium,
-                font_family="NunitoSans",
-                weight=ft.FontWeight.W_600
-            )
-        )
-
-class SegmentedControl(ft.Container):
-    def __init__(self, activated_button_args:dict, deactivated_button_args:dict, constants:SimpleNamespace):
-        super().__init__()
-        activated_button = SegmentedControlButton(
-            text=activated_button_args['text'],
-            default_bgcolor=activated_button_args['default_bgcolor'],
-            hover_bgcolor=activated_button_args['hover_bgcolor'],
-            constants=constants
-        )
-        deactivated_button = SegmentedControlButton(
-            text=deactivated_button_args['text'],
-            default_bgcolor=deactivated_button_args['default_bgcolor'],
-            hover_bgcolor=deactivated_button_args['hover_bgcolor'],
-            constants=constants
-        )
-        row = ft.Row([activated_button, deactivated_button], spacing=3)
-
-        self.content = row
-        self.padding = 5
-        self.bgcolor=constants.colors.secondary_3
-        self.border_radius=constants.border_radius
-        self.margin = ft.margin.only(bottom=constants.margins.xl)
-
-class CustomTextField(ft.TextField):
-    def __init__(self, hint_text: str, constants:SimpleNamespace):
-        super().__init__()
-        self.hint_text = hint_text
-        self.expand = True
-        self.border_radius = constants.border_radius
-        self.bgcolor = constants.colors.secondary_3
-        self.border_color = constants.colors.secondary_3_3
-        self.hover_color = constants.colors.secondary_3
-
-class CustomContainer(ft.Container):
-    def __init__(self, constants:SimpleNamespace):
-        super().__init__()
-        self.expand = True
-        self.border_radius = constants.border_radius
-        self.bgcolor = constants.colors.secondary_3
-        self.border = ft.border.all(1, color=constants.colors.secondary_3_3)
-        self.hover_color = constants.colors.secondary_3
-        self.padding = 8
-
-class NumbersOnlyField(ft.TextField):
-    def __init__(self, constants: SimpleNamespace, value=0, max_value=None):
-        super().__init__()
-        self.value=f"{value:02}"
-        self.max_value = max_value
-        self.content_padding=ft.Padding(0, 8, 0, 8)
-        self.text_style=ft.TextStyle(weight=ft.FontWeight.W_500, size=constants.font_sizes.medium)
-        self.keyboard_type=ft.KeyboardType.NUMBER
-        self.input_filter=ft.NumbersOnlyInputFilter()
-        self.width = 30
-        self.text_align = ft.TextAlign.CENTER
-        self.border_color = 'transparent'
-        self.text_style = ft.TextStyle(font_family='IBMPlexMono')
-        self.on_change = self.handle_change
-
-    def handle_change(self, e):
-        # To make sure program doesnt crash if invalid input in number field
-        try:
-            val = int(self.value or 0)
-        except ValueError:
-            val = 0
-
-        if self.max_value is not None:
-            if val > self.max_value:
-                val = self.max_value
-            elif val < 0:
-                val = 0
-
-        self.value = f"{val:02}"
-
-        self.parent.update()
-
-class CustomNumbersOnlyField(NumbersOnlyField):
-    def __init__(self, constants):
-        super().__init__(constants=constants)
-        self.expand = True
-        self.border_radius = constants.border_radius
-        self.constants = constants
-        self.bgcolor = constants.colors.secondary_3
-        self.border_color = constants.colors.secondary_3_3
-        self.on_hover = self.handle_hover
-
-    def handle_hover(self, e:ft.HoverEvent):
-        if e.data == "true":
-            self.bgcolor = self.constants.colors.secondary_3_2
+        if self.pad_to is not None and not self._focused:
+            display = str(value).zfill(self.pad_to)
         else:
-            self.bgcolor = self.constants.colors.secondary_3
-        self.update()
+            display = str(value)
 
-class Timestamp(ft.Container):
-    def __init__(self, constants):
+        self._set_value(display)
+
+    def _normalize_on_exit(self):
+        if (self.value or "").strip() == "":
+            if self.allow_empty:
+                self.value = ""
+                return
+            self.value = ""
+            return
+
+        value = int(self.value)
+        if self.min_value is not None and value < self.min_value:
+            value = self.min_value
+        if self.max_value is not None and value > self.max_value:
+            value = self.max_value
+        self.value = self._format_for_display(value)
+
+    def _format_for_display(self, value: int | None) -> str:
+        if value is None:
+            return ""
+        value = max(0, int(value))
+        if self.pad_to is not None:
+            return str(value).zfill(self.pad_to)
+        return str(value)
+
+    def _set_value(self, value: str):
+        if self.value == value:
+            return
+        self._suspend_change = True
+        self.value = value
+        self._suspend_change = False
+        if self.page is not None:
+            self.update()
+
+    def clamp_value(self):
+        self._normalize_on_exit()
+
+    def int_value(self, default: int = 0) -> int:
+        raw = (self.value or "").strip()
+        if raw:
+            return int(raw)
+        if self.default_number is not None:
+            return int(self.default_number)
+        return default
+
+    def set_int_value(self, value: int | None):
+        if value is None:
+            self.value = ""
+        else:
+            self.value = self._format_for_display(value)
+
+    def reset(self):
+        self.value = ""
+
+
+class InlineNumberField(NumberField):
+    def __init__(
+        self,
+        constants: SimpleNamespace,
+        *,
+        max_value: int | None = None,
+    ):
+        super().__init__(
+            constants,
+            width=54,
+            min_value=0,
+            max_value=max_value,
+            default_number=0,
+            initial_value=None,
+            allow_empty=False,
+            monospace=True,
+            pad_to=2,
+            borderless=True,
+            bgcolor=ft.Colors.TRANSPARENT,
+        )
+        self.content_padding = ft.Padding(6, 6, 6, 6)
+        self.height = 32
+
+
+class TimestampInput(ft.Container):
+    def __init__(self, constants: SimpleNamespace):
         super().__init__()
-        self.hours_field = NumbersOnlyField(constants=constants)
-        self.minutes_field = NumbersOnlyField(constants=constants, max_value=59)
-        self.seconds_field = NumbersOnlyField(constants=constants, max_value=59)
-
         self.constants = constants
+        self._focused_children = 0
+        self.hours = InlineNumberField(constants)
+        self.minutes = InlineNumberField(constants, max_value=59)
+        self.seconds = InlineNumberField(constants, max_value=59)
+        for field in (self.hours, self.minutes, self.seconds):
+            field.on_focus_changed = self._handle_child_focus_change
+
+        colon_style = dict(
+            size=constants.font_sizes.number,
+            weight=ft.FontWeight.W_700,
+            color=constants.colors.text_muted,
+        )
 
         self.content = ft.Row(
-            [
-                self.hours_field,
-                ft.Text(":", weight=ft.FontWeight.W_500),
-                self.minutes_field,
-                ft.Text(":", weight=ft.FontWeight.W_500),
-                self.seconds_field
+            controls=[
+                self.hours,
+                ft.Text(":", **colon_style),
+                self.minutes,
+                ft.Text(":", **colon_style),
+                self.seconds,
             ],
-            alignment=ft.MainAxisAlignment.CENTER
+            spacing=4,
+            alignment=ft.MainAxisAlignment.CENTER,
+            vertical_alignment=ft.CrossAxisAlignment.CENTER,
+        )
+        self.expand = True
+        self.padding = ft.Padding(8, 4, 8, 4)
+        self.bgcolor = constants.colors.surface
+        self.border = ft.border.all(1, constants.colors.border)
+        self.border_radius = constants.sizes.control_radius
+
+    def _handle_child_focus_change(self, focused: bool):
+        if focused:
+            self._focused_children += 1
+        else:
+            self._focused_children = max(0, self._focused_children - 1)
+        border_color = (
+            self.constants.colors.accent
+            if self._focused_children > 0
+            else self.constants.colors.border
+        )
+        self.border = ft.border.all(1, border_color)
+        if self.page is not None:
+            self.update()
+
+    def total_seconds(self) -> int:
+        return (
+            self.hours.int_value()
+            * 3600
+            + self.minutes.int_value() * 60
+            + self.seconds.int_value()
         )
 
-        self.border_radius = constants.border_radius
-        self.bgcolor = constants.colors.secondary_3
-        self.border = ft.border.all(1, constants.colors.secondary_3_3)
-        self.expand = 5
+    def set_seconds(self, total_seconds: int):
+        total_seconds = max(0, int(total_seconds))
+        hours, remainder = divmod(total_seconds, 3600)
+        minutes, seconds = divmod(remainder, 60)
+        self.hours.set_int_value(hours)
+        self.minutes.set_int_value(minutes)
+        self.seconds.set_int_value(seconds)
 
-        self.on_hover = self.handle_hover
+    def reset(self):
+        self.hours.reset()
+        self.minutes.reset()
+        self.seconds.reset()
 
-    def handle_hover(self, e:ft.HoverEvent):
-        if e.data == "true":
-            self.bgcolor = self.constants.colors.secondary_3_2
-        else:
-            self.bgcolor = self.constants.colors.secondary_3
-        self.update()
 
-class CustomHeading(ft.Text):
-    def __init__(self, constants, text):
+class DurationInput(ft.Row):
+    def __init__(self, constants: SimpleNamespace):
+        self.hours = NumberField(
+            constants,
+            width=46,
+            min_value=0,
+            default_number=0,
+            monospace=True,
+        )
+        self.minutes = NumberField(
+            constants,
+            width=46,
+            min_value=0,
+            max_value=59,
+            default_number=0,
+            monospace=True,
+        )
+        self.seconds = NumberField(
+            constants,
+            width=46,
+            min_value=0,
+            max_value=59,
+            default_number=0,
+            monospace=True,
+        )
+
+        super().__init__(
+            controls=[
+                self._unit_column("H", self.hours, constants),
+                self._colon(constants),
+                self._unit_column("M", self.minutes, constants),
+                self._colon(constants),
+                self._unit_column("S", self.seconds, constants),
+            ],
+            spacing=6,
+            vertical_alignment=ft.CrossAxisAlignment.END,
+        )
+
+    def _colon(self, constants: SimpleNamespace) -> ft.Container:
+        return ft.Container(
+            content=ft.Text(
+                ":",
+                color=constants.colors.text_muted,
+                size=16,
+                weight=ft.FontWeight.W_700,
+            ),
+            margin=ft.margin.only(bottom=8),
+        )
+
+    def _unit_column(
+        self, label: str, field: NumberField, constants: SimpleNamespace
+    ) -> ft.Column:
+        return ft.Column(
+            controls=[
+                ft.Text(
+                    label,
+                    size=constants.font_sizes.small,
+                    color=constants.colors.text_muted,
+                    weight=ft.FontWeight.W_600,
+                ),
+                field,
+            ],
+            spacing=6,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+        )
+
+    def total_seconds(self) -> int:
+        return (
+            self.hours.int_value()
+            * 3600
+            + self.minutes.int_value() * 60
+            + self.seconds.int_value()
+        )
+
+    def set_seconds(self, total_seconds: int | None):
+        total_seconds = max(0, int(total_seconds or 0))
+        hours, remainder = divmod(total_seconds, 3600)
+        minutes, seconds = divmod(remainder, 60)
+        self.hours.set_int_value(hours)
+        self.minutes.set_int_value(minutes)
+        self.seconds.set_int_value(seconds)
+
+    def reset(self):
+        self.hours.reset()
+        self.minutes.reset()
+        self.seconds.reset()
+
+
+class PrimaryButton(ft.ElevatedButton):
+    def __init__(
+        self,
+        text: str,
+        on_click: Callable,
+        constants: SimpleNamespace,
+        *,
+        expand: bool = True,
+    ):
         super().__init__()
-        self.value = text
-        self.size = constants.font_sizes.medium
-        self.weight = ft.FontWeight.W_600
+        self.text = text
+        self.on_click = on_click
+        self.expand = expand
+        self.height = constants.sizes.action_height
+        self.style = ft.ButtonStyle(
+            color=constants.colors.text,
+            bgcolor={
+                ft.ControlState.DEFAULT: constants.colors.accent,
+                ft.ControlState.HOVERED: constants.colors.accent_dark,
+                ft.ControlState.DISABLED: ft.Colors.with_opacity(
+                    0.45, constants.colors.accent
+                ),
+            },
+            shape=_button_shape(constants.sizes.control_radius),
+            elevation=0,
+            shadow_color=ft.Colors.TRANSPARENT,
+            text_style=ft.TextStyle(
+                size=constants.font_sizes.body,
+                weight=ft.FontWeight.W_600,
+                font_family="NunitoSans",
+            ),
+            padding=ft.Padding(14, 10, 14, 10),
+        )
 
-class CustomTimeToWatchColumn(ft.Column):
-    def __init__(self, constants, heading_text, max_value=None):
+
+class SecondaryButton(ft.OutlinedButton):
+    def __init__(
+        self,
+        text: str,
+        on_click: Callable,
+        constants: SimpleNamespace,
+        *,
+        expand: bool = True,
+    ):
         super().__init__()
-        heading = CustomHeading(constants=constants, text=heading_text)
-        heading.weight = ft.FontWeight.W_500
+        self.text = text
+        self.on_click = on_click
+        self.expand = expand
+        self.height = constants.sizes.action_height
+        self.style = ft.ButtonStyle(
+            color=constants.colors.text_muted,
+            bgcolor={
+                ft.ControlState.DEFAULT: constants.colors.surface_muted,
+                ft.ControlState.HOVERED: constants.colors.surface_hover,
+            },
+            side=ft.BorderSide(
+                width=1,
+                color=ft.Colors.with_opacity(0.45, constants.colors.border),
+            ),
+            shape=_button_shape(constants.sizes.control_radius),
+            text_style=ft.TextStyle(
+                size=constants.font_sizes.body,
+                weight=ft.FontWeight.W_600,
+            ),
+            padding=ft.Padding(14, 10, 14, 10),
+        )
 
-        input_field = CustomNumbersOnlyField(constants=constants)
-        input_field.width = 50
 
-        self.controls = [
-            heading,
-            input_field
-        ]
-        self.horizontal_alignment = ft.CrossAxisAlignment.CENTER
+class SurfaceCard(ft.Container):
+    def __init__(self, constants: SimpleNamespace, content: ft.Control | None = None):
+        super().__init__()
+        self.content = content
+        self.bgcolor = constants.colors.surface
+        self.border = ft.border.all(1, constants.colors.border)
+        self.border_radius = constants.sizes.control_radius
+        self.padding = ft.Padding(14, 14, 14, 14)
 
+
+class ModeToggle(ft.Container):
+    def __init__(
+        self,
+        constants: SimpleNamespace,
+        *,
+        value: str,
+        on_change: Callable[[str], None],
+    ):
+        super().__init__()
+        self.constants = constants
+        self.value = value
+        self.on_change = on_change
+        self.watch_button = self._build_button("watch", "Watch Duration")
+        self.length_button = self._build_button("length", "Playlist Length")
+        self.content = ft.Row(
+            controls=[self.watch_button, self.length_button],
+            spacing=4,
+        )
+        self.padding = 4
+        self.bgcolor = constants.colors.surface
+        self.border = ft.border.all(
+            1, ft.Colors.with_opacity(0.45, constants.colors.border)
+        )
+        self.border_radius = constants.sizes.control_radius
+        self.set_value(value)
+
+    def _build_button(self, key: str, text: str) -> ft.TextButton:
+        return ft.TextButton(
+            text=text,
+            expand=True,
+            height=34,
+            style=ft.ButtonStyle(
+                overlay_color=ft.Colors.TRANSPARENT,
+                shape=_button_shape(self.constants.sizes.control_radius - 2),
+                padding=ft.Padding(10, 0, 10, 0),
+            ),
+            on_click=lambda _event, selected=key: self._handle_click(selected),
+        )
+
+    def _handle_click(self, value: str):
+        if value == self.value:
+            return
+        self.set_value(value)
+        self.on_change(value)
+
+    def set_value(self, value: str):
+        self.value = value
+
+        active_color = self.constants.colors.accent
+        active_hover = self.constants.colors.accent_dark
+        inactive_color = ft.Colors.TRANSPARENT
+        inactive_hover = self.constants.colors.surface_hover
+
+        button_style = lambda selected: ft.ButtonStyle(
+            overlay_color=ft.Colors.TRANSPARENT,
+            bgcolor={
+                ft.ControlState.DEFAULT: active_color if selected else inactive_color,
+                ft.ControlState.HOVERED: active_hover if selected else inactive_hover,
+            },
+            color=self.constants.colors.text,
+            shape=_button_shape(self.constants.sizes.control_radius - 2),
+            text_style=ft.TextStyle(
+                size=self.constants.font_sizes.body,
+                weight=ft.FontWeight.W_600,
+            ),
+            padding=ft.Padding(10, 0, 10, 0),
+        )
+
+        self.watch_button.style = button_style(value == "watch")
+        self.length_button.style = button_style(value == "length")
+
+        if self.page is not None:
+            self.update()
+
+
+def toolbar_button(
+    constants: SimpleNamespace,
+    *,
+    tooltip: str,
+    on_click: Callable,
+    icon: str | ft.Icons | None = None,
+    image_src: str | None = None,
+) -> ft.Container:
+    content = (
+        ft.Image(src=image_src, width=28, height=28, fit=ft.ImageFit.CONTAIN)
+        if image_src
+        else None
+    )
+    button = ft.Container(
+        width=constants.sizes.icon_button_size,
+        height=constants.sizes.icon_button_size,
+        bgcolor=constants.colors.surface,
+        border=ft.border.all(
+            1, ft.Colors.with_opacity(0.45, constants.colors.panel_edge)
+        ),
+        border_radius=10,
+        tooltip=tooltip,
+        alignment=ft.alignment.center,
+        content=content or ft.Icon(icon, size=20, color=constants.colors.text),
+    )
+    def _handle_click(event):
+        button.bgcolor = constants.colors.surface
+        if button.page is not None:
+            button.update()
+        on_click(event)
+        button.bgcolor = constants.colors.surface
+        if button.page is not None:
+            button.update()
+
+    button.on_click = _handle_click
+
+    def _handle_hover(event):
+        button.bgcolor = (
+            constants.colors.surface_hover
+            if str(event.data).lower() == "true"
+            else constants.colors.surface
+        )
+        if button.page is not None:
+            button.update()
+
+    button.on_hover = _handle_hover
+    return button
+
+
+def build_screen_card(
+    title: str,
+    body: ft.Control,
+    constants: SimpleNamespace,
+    *,
+    leading: ft.Control | None = None,
+    trailing: ft.Control | None = None,
+) -> ft.Container:
+    leading = leading or ft.Container(
+        width=constants.sizes.icon_button_size,
+        height=constants.sizes.icon_button_size,
+    )
+    trailing = trailing or ft.Container(
+        width=constants.sizes.icon_button_size,
+        height=constants.sizes.icon_button_size,
+    )
+
+    return ft.Container(
+        expand=True,
+        bgcolor=constants.colors.panel_bg,
+        padding=ft.Padding(
+            constants.sizes.internal_padding,
+            constants.sizes.internal_padding,
+            constants.sizes.internal_padding,
+            constants.sizes.internal_padding,
+        ),
+        content=ft.Column(
+            controls=[
+                ft.Row(
+                    controls=[
+                        leading,
+                        ft.Text(
+                            title,
+                            expand=True,
+                            text_align=ft.TextAlign.CENTER,
+                            size=constants.font_sizes.title,
+                            color=constants.colors.text,
+                            weight=ft.FontWeight.W_700,
+                        ),
+                        trailing,
+                    ],
+                    vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                ),
+                ft.Container(content=body, expand=True),
+            ],
+            spacing=18,
+            expand=True,
+        ),
+    )

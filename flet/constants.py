@@ -1,38 +1,60 @@
 from types import SimpleNamespace
+
 import flet as ft
 
+
 colors = SimpleNamespace(
-    primary="#D31130", # Main
-    primary_2="#9a0c24", # Main Darker (65%)
-    secondary="#1A1A1A", # App BG
-    secondary_2="#292929", # Darker secondary BH
-    secondary_3="#2D1A1E", # Maroon BG
-    secondary_3_2="#3a161e", # Brighter Maroon BG (for hover)
-    secondary_3_3="#804A56", # Maroon outline
-    white="#EFEFEF"
+    accent="#F22048",
+    accent_dark="#B91535",
+    accent_soft="#2E171D",
+    accent_glow="#6E1426",
+    page_bg="#181818",
+    panel_bg="#181818",
+    panel_edge="#252525",
+    surface="#24161A",
+    surface_hover="#321B21",
+    surface_muted="#262626",
+    border="#824A56",
+    text="#F4F0F1",
+    text_muted="#C9BDC0",
+    text_subtle="#958A8E",
+    success="#4FD08A",
+    danger="#FF7084",
 )
 
 font_sizes = SimpleNamespace(
-    large=20,
-    medium=16
+    title=18,
+    section=15,
+    body=13,
+    small=11,
+    number=15,
 )
 
-margins = SimpleNamespace(
-    xl=10,
-    large=8,
-    medium=7,
-    medium_small=7,
-    small=6,
-    xs=5
+sizes = SimpleNamespace(
+    card_width=352,
+    card_radius=0,
+    control_radius=12,
+    input_height=40,
+    action_height=42,
+    icon_button_size=36,
+    page_padding=0,
+    internal_padding=16,
+    result_group_gap=12,
+    result_line_gap=6,
+)
+
+window = SimpleNamespace(
+    default_width=375,
+    default_height=700,
+    min_width=340,
+    min_height=560,
 )
 
 constants = SimpleNamespace(
+    app_title="YouTube Playlist Tracker",
     colors=colors,
     font_sizes=font_sizes,
-    margins=margins,
-    default_width=375,
-    default_height=645,
-    scroll_bar_thickness=5,
-    scroll_bar_radius=10,
-    border_radius=8
+    sizes=sizes,
+    window=window,
+    playback_speeds=(1.25, 1.5, 1.75, 2.0),
 )
