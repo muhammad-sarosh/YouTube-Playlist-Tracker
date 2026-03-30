@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import sys
 
 import flet as ft
 
@@ -18,11 +19,12 @@ class PlaylistTrackerApp(
 ):
     def __init__(self, page: ft.Page):
         self.page = page
-        self.base_dir = Path(__file__).resolve().parent
+        self.source_dir = Path(__file__).resolve().parent
+        self.base_dir = self._resolve_runtime_dir()
         self.data_dir = self.base_dir / "data"
         self.saved_store = SavedPlaylistsStore(
             self.data_dir,
-            legacy_paths=[self.base_dir.parent / "playlists.json"],
+            legacy_paths=self._legacy_playlist_paths(),
         )
         self.playlist_service = PlaylistService()
         self.saved_playlists = self.saved_store.load()
@@ -82,6 +84,17 @@ class PlaylistTrackerApp(
         self._build_playlist_form_controls()
         self.refresh_saved_playlist_controls()
         self.show_main_screen()
+
+    def _resolve_runtime_dir(self) -> Path:
+        if getattr(sys, "frozen", False):
+            return Path(sys.executable).resolve().parent
+        return self.source_dir
+
+    def _legacy_playlist_paths(self) -> list[Path]:
+        paths = [self.base_dir / "playlists.json"]
+        if self.base_dir == self.source_dir:
+            paths.append(self.source_dir.parent / "playlists.json")
+        return paths
 
     def _configure_page(self):
         self.page.title = constants.app_title
