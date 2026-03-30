@@ -15,7 +15,7 @@ The normal way to use this project is through the `.exe` on the repo's Releases 
 
 Download the latest Windows release here: [YouTube Playlist Tracker v1.0.0](https://github.com/muhammad-sarosh/YouTube-Playlist-Tracker/releases/tag/v1.0.0)
 
-- Download the latest `YouTube Playlist Tracker.exe` from Releases.
+- Download the latest `YouTube_Playlist_Tracker.exe` from Releases.
 - Run it on Windows.
 - No Python setup is required for normal use.
 
