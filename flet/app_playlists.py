@@ -28,6 +28,24 @@ class PlaylistManagementMixin:
     def decrement_playlist_bookmark_video(self, _event=None):
         self.playlist_bookmark_video_field.decrement()
 
+    def reset_playlist_bookmark_timestamp(self, _event=None):
+        self.playlist_bookmark_timestamp.reset()
+        self._set_inline_message(self.playlist_bookmark_message, None)
+        self.page.update()
+
+    def _effective_watch_default_for_today(
+        self, playlist: SavedPlaylist
+    ) -> int | None:
+        weekday_key = WEEKDAY_KEYS[datetime.now().weekday()]
+        day_defaults = playlist.default_watch_by_day or {}
+
+        if weekday_key in day_defaults:
+            value = day_defaults.get(weekday_key)
+            return value if value and value > 0 else None
+
+        value = playlist.default_watch_seconds
+        return value if value and value > 0 else None
+
     def _link_field_for_mode(self, mode: str) -> StyledTextField:
         if mode == "watch":
             return self.watch_link_field
@@ -508,7 +526,19 @@ class PlaylistManagementMixin:
                 self._gap(6),
                 self.playlist_default_watch,
                 self._gap(14),
-                SectionLabel("Current Video | Timestamp", constants),
+                ft.Row(
+                    controls=[
+                        SectionLabel("Current Video | Timestamp", constants),
+                        ft.Container(expand=True),
+                        self._compact_icon_button(
+                            ft.Icons.REFRESH_ROUNDED,
+                            "Reset timestamp",
+                            self.reset_playlist_bookmark_timestamp,
+                        ),
+                    ],
+                    spacing=12,
+                    vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                ),
                 self._gap(8),
                 ft.Row(
                     controls=[

@@ -474,6 +474,7 @@ class AppUIBuildMixin:
         is_first: bool,
         is_last: bool,
     ) -> ft.Container:
+        today_watch_seconds = self._effective_watch_default_for_today(playlist)
         row_radius = ft.border_radius.only(
             top_left=constants.sizes.control_radius if is_first else 0,
             top_right=constants.sizes.control_radius if is_first else 0,
@@ -495,9 +496,33 @@ class AppUIBuildMixin:
                         weight=ft.FontWeight.W_500,
                         overflow=ft.TextOverflow.ELLIPSIS,
                         no_wrap=True,
-                    )
+                    ),
+                    *(
+                        [
+                            ft.Icon(
+                                ft.Icons.FLAG_ROUNDED,
+                                size=14,
+                                color=constants.colors.accent,
+                                tooltip=ft.Tooltip(
+                                    message=(
+                                        "Today's watch goal: "
+                                        f"{format_duration(today_watch_seconds).replace(', ', ' ')}"
+                                    ),
+                                    bgcolor="#D8D2D4",
+                                    text_style=ft.TextStyle(
+                                        color=constants.colors.page_bg,
+                                        size=constants.font_sizes.small,
+                                        weight=ft.FontWeight.W_600,
+                                    ),
+                                ),
+                            )
+                        ]
+                        if today_watch_seconds is not None
+                        else []
+                    ),
                 ],
-                spacing=0,
+                spacing=8,
+                vertical_alignment=ft.CrossAxisAlignment.CENTER,
             ),
             on_click=lambda _event, chosen=playlist, selected_mode=mode: self.apply_saved_playlist(
                 selected_mode, chosen
