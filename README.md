@@ -30,6 +30,9 @@ If Windows, SmartScreen, or your browser warns about the `.exe`, that can happen
 - Auto-fill bookmarks: optionally load the saved bookmark into the starting video and timestamp fields.
 - Default watch time: save a default watch duration for each playlist.
 - Watch time by day: optionally save different default watch times for different days of the week.
+- Today's watch-goal indicator: see which saved playlists have a watch target for the current day directly in the playlist picker.
+- Done for today: mark a playlist as completed for the current day so its watch-goal flag disappears.
+- Quick edit from picker: open a saved playlist's edit screen directly from the playlist dropdown.
 - Copyable results: copy the calculated result text directly from the app.
 - Playback speed estimates: see playlist length at `1.25x`, `1.5x`, `1.75x`, and `2.0x`.
 
@@ -70,6 +73,9 @@ You can:
 - save a current video and timestamp bookmark
 - choose whether that bookmark should auto-fill the starting position
 - save a default watch duration for every day or by weekday
+- see when a playlist has a watch goal for today in the dropdown
+- mark a playlist as done for the current day
+- jump straight to editing a saved playlist from the dropdown
 
 ## Notes
 
