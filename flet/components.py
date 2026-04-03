@@ -10,6 +10,19 @@ def _button_shape(radius: int) -> ft.RoundedRectangleBorder:
     return ft.RoundedRectangleBorder(radius=radius)
 
 
+def themed_tooltip(constants: SimpleNamespace, message: str) -> ft.Tooltip:
+    return ft.Tooltip(
+        message=message,
+        bgcolor="#D8D2D4",
+        wait_duration=650,
+        text_style=ft.TextStyle(
+            color=constants.colors.page_bg,
+            size=constants.font_sizes.small,
+            weight=ft.FontWeight.W_600,
+        ),
+    )
+
+
 class SectionLabel(ft.Text):
     def __init__(self, text: str, constants: SimpleNamespace):
         super().__init__(
@@ -483,7 +496,7 @@ class NumberStepper(ft.Container):
         control = ft.Container(
             height=(self.constants.sizes.input_height - 1) / 2,
             alignment=ft.alignment.center,
-            tooltip=tooltip,
+            tooltip=themed_tooltip(self.constants, tooltip),
             content=icon,
             border_radius=ft.border_radius.only(
                 top_left=self.constants.sizes.control_radius if top_half else 0,
@@ -695,7 +708,7 @@ def toolbar_button(
             1, ft.Colors.with_opacity(0.45, constants.colors.panel_edge)
         ),
         border_radius=10,
-        tooltip=tooltip,
+        tooltip=themed_tooltip(constants, tooltip),
         alignment=ft.alignment.center,
         content=content or ft.Icon(icon, size=20, color=constants.colors.text),
     )

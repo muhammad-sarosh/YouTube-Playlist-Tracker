@@ -14,6 +14,7 @@ from components import (
     SurfaceCard,
     TimestampInput,
     build_screen_card,
+    themed_tooltip,
     toolbar_button,
 )
 from constants import constants
@@ -353,7 +354,7 @@ class AppUIBuildMixin:
             ),
             border_radius=10,
             alignment=ft.alignment.center,
-            tooltip=tooltip,
+            tooltip=themed_tooltip(constants, tooltip),
             content=icon,
         )
 
@@ -439,7 +440,7 @@ class AppUIBuildMixin:
             bgcolor=constants.colors.surface,
             border=ft.border.all(1, constants.colors.border),
             border_radius=constants.sizes.control_radius,
-            tooltip="Choose saved playlist",
+            tooltip=themed_tooltip(constants, "Choose saved playlist"),
             alignment=ft.alignment.center,
             content=icon,
         )
@@ -509,7 +510,7 @@ class AppUIBuildMixin:
             height=22,
             border_radius=7,
             alignment=ft.alignment.center,
-            tooltip="Edit playlist",
+            tooltip=themed_tooltip(constants, "Edit playlist"),
             content=edit_icon,
             on_click=lambda _event, chosen=playlist: self.show_edit_playlist_screen(
                 chosen.id

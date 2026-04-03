@@ -4,6 +4,7 @@ import asyncio
 
 import flet as ft
 
+from components import themed_tooltip
 from constants import constants
 from services import (
     PlaylistLengthResult,
@@ -43,7 +44,7 @@ class ResultHandlingMixin:
         icon.name = ft.Icons.CHECK_ROUNDED
         icon.color = constants.colors.text
         button.bgcolor = constants.colors.accent_soft
-        button.tooltip = "Copied"
+        button.tooltip = themed_tooltip(constants, "Copied")
         if button.page is not None:
             button.update()
         if hasattr(self.page, "run_task"):
@@ -60,7 +61,7 @@ class ResultHandlingMixin:
         icon.name = ft.Icons.CONTENT_COPY_ROUNDED
         icon.color = constants.colors.text_muted
         button.bgcolor = constants.colors.surface
-        button.tooltip = "Copy result"
+        button.tooltip = themed_tooltip(constants, "Copy result")
         if button.page is not None:
             button.update()
 

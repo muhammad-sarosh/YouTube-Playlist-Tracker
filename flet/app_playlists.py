@@ -13,6 +13,7 @@ from components import (
     StyledTextField,
     SurfaceCard,
     build_screen_card,
+    themed_tooltip,
     toolbar_button,
 )
 from constants import constants
@@ -293,7 +294,7 @@ class PlaylistManagementMixin:
             bgcolor=constants.colors.surface_muted,
             border_radius=10,
             alignment=ft.alignment.center,
-            tooltip=tooltip,
+            tooltip=themed_tooltip(constants, tooltip),
             content=ft.Icon(
                 icon,
                 size=16,
@@ -598,8 +599,9 @@ class PlaylistManagementMixin:
         has_saved = bool(self.saved_playlists)
         for mode in ("watch", "length"):
             button, icon = self._picker_button_parts(mode)
-            button.tooltip = (
-                "Choose saved playlist" if has_saved else "No saved playlists yet"
+            button.tooltip = themed_tooltip(
+                constants,
+                "Choose saved playlist" if has_saved else "No saved playlists yet",
             )
             button.disabled = not has_saved
             icon.color = (
