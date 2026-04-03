@@ -23,6 +23,25 @@ WEEKDAY_LABELS = {day: day.title() for day in WEEKDAY_KEYS}
 
 
 class PlaylistManagementMixin:
+    def _today_key(self) -> str:
+        return datetime.now().date().isoformat()
+
+    def _configured_watch_default_for_today(
+        self, playlist: SavedPlaylist
+    ) -> int | None:
+        weekday_key = WEEKDAY_KEYS[datetime.now().weekday()]
+        day_defaults = playlist.default_watch_by_day or {}
+
+        if weekday_key in day_defaults:
+            value = day_defaults.get(weekday_key)
+            return value if value and value > 0 else None
+
+        value = playlist.default_watch_seconds
+        return value if value and value > 0 else None
+
+    def _playlist_done_for_today(self, playlist: SavedPlaylist) -> bool:
+        return playlist.completed_for_date == self._today_key()
+
     def increment_playlist_bookmark_video(self, _event=None):
         self.playlist_bookmark_video_field.increment()
 
@@ -37,15 +56,9 @@ class PlaylistManagementMixin:
     def _effective_watch_default_for_today(
         self, playlist: SavedPlaylist
     ) -> int | None:
-        weekday_key = WEEKDAY_KEYS[datetime.now().weekday()]
-        day_defaults = playlist.default_watch_by_day or {}
-
-        if weekday_key in day_defaults:
-            value = day_defaults.get(weekday_key)
-            return value if value and value > 0 else None
-
-        value = playlist.default_watch_seconds
-        return value if value and value > 0 else None
+        if self._playlist_done_for_today(playlist):
+            return None
+        return self._configured_watch_default_for_today(playlist)
 
     def _link_field_for_mode(self, mode: str) -> StyledTextField:
         if mode == "watch":
@@ -135,12 +148,12 @@ class PlaylistManagementMixin:
             field.value = playlist.name
 
     def _apply_watch_playlist_defaults(self, playlist: SavedPlaylist):
-        weekday_key = WEEKDAY_KEYS[datetime.now().weekday()]
-        day_defaults = playlist.default_watch_by_day or {}
-        if weekday_key in day_defaults:
-            self.watch_duration.set_seconds(day_defaults[weekday_key] or 0)
-        elif playlist.default_watch_seconds is not None:
-            self.watch_duration.set_seconds(playlist.default_watch_seconds)
+        configured_watch_seconds = self._configured_watch_default_for_today(playlist)
+        effective_watch_seconds = self._effective_watch_default_for_today(playlist)
+        if effective_watch_seconds is not None:
+            self.watch_duration.set_seconds(effective_watch_seconds)
+        elif configured_watch_seconds is not None:
+            self.watch_duration.set_seconds(0)
         if playlist.autofill_bookmark and playlist.bookmark_video_position is not None:
             self.watch_start_video_field.set_int_value(playlist.bookmark_video_position)
             self.watch_timestamp.set_seconds(playlist.bookmark_timestamp_seconds or 0)
@@ -353,6 +366,8 @@ class PlaylistManagementMixin:
         self.playlist_bookmark_video_field.set_int_value(None)
         self.playlist_bookmark_timestamp.set_seconds(0)
         self.playlist_autofill_checkbox.value = True
+        self.playlist_done_today_checkbox.value = False
+        self.playlist_done_today_checkbox.visible = False
         self._show_playlist_form_screen("Add Playlist", "Add")
 
     def show_edit_playlist_screen(self, playlist_id: str):
@@ -387,6 +402,8 @@ class PlaylistManagementMixin:
             playlist.bookmark_timestamp_seconds or 0
         )
         self.playlist_autofill_checkbox.value = playlist.autofill_bookmark
+        self.playlist_done_today_checkbox.value = self._playlist_done_for_today(playlist)
+        self.playlist_done_today_checkbox.visible = True
         self._show_playlist_form_screen("Edit Playlist", "Save")
 
     def show_active_playlist_form_screen(self, _event=None):
@@ -527,6 +544,8 @@ class PlaylistManagementMixin:
                 self._gap(6),
                 self.playlist_default_watch,
                 self._gap(14),
+                self.playlist_done_today_checkbox,
+                self._gap(8 if self.playlist_done_today_checkbox.visible else 0),
                 ft.Row(
                     controls=[
                         SectionLabel("Current Video | Timestamp", constants),
@@ -732,6 +751,9 @@ class PlaylistManagementMixin:
             playlist.url = normalized_url
             playlist.default_watch_seconds = default_watch_seconds_value
             playlist.default_watch_by_day = default_watch_by_day
+            playlist.completed_for_date = (
+                self._today_key() if self.playlist_done_today_checkbox.value else None
+            )
             playlist.bookmark_video_position = bookmark_video_position
             playlist.bookmark_timestamp_seconds = (
                 bookmark_timestamp_seconds if bookmark_video_position is not None else None

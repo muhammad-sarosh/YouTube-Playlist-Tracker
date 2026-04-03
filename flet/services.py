@@ -41,6 +41,7 @@ class SavedPlaylist:
     created_at: str
     default_watch_seconds: int | None = None
     default_watch_by_day: dict[str, int | None] | None = None
+    completed_for_date: str | None = None
     bookmark_video_position: int | None = None
     bookmark_timestamp_seconds: int | None = None
     autofill_bookmark: bool = False
@@ -233,6 +234,7 @@ class SavedPlaylistsStore:
                             created_at=timestamp,
                             default_watch_seconds=None,
                             default_watch_by_day=None,
+                            completed_for_date=None,
                             bookmark_video_position=None,
                             bookmark_timestamp_seconds=None,
                             autofill_bookmark=False,
@@ -269,6 +271,11 @@ class SavedPlaylistsStore:
                             item.get("default_watch_seconds")
                         ),
                         default_watch_by_day=default_watch_by_day,
+                        completed_for_date=(
+                            str(item.get("completed_for_date")).strip() or None
+                            if item.get("completed_for_date") is not None
+                            else None
+                        ),
                         bookmark_video_position=_optional_int(
                             item.get("bookmark_video_position")
                         ),

@@ -267,6 +267,15 @@ class AppUIBuildMixin:
         self.playlist_name_message = ReservedMessage(constants)
         self.playlist_url_message = ReservedMessage(constants)
         self.playlist_bookmark_message = ReservedMessage(constants)
+        checkbox_fill = {
+            ft.ControlState.DEFAULT: ft.Colors.TRANSPARENT,
+            ft.ControlState.SELECTED: constants.colors.accent,
+        }
+        checkbox_border = {
+            ft.ControlState.DEFAULT: ft.BorderSide(1.4, constants.colors.border),
+            ft.ControlState.SELECTED: ft.BorderSide(1.4, constants.colors.accent),
+        }
+        checkbox_shape = ft.RoundedRectangleBorder(radius=4)
 
         self.playlist_default_watch = DurationInput(constants)
         self.playlist_default_watch_by_day_fields = {
@@ -290,9 +299,32 @@ class AppUIBuildMixin:
         self.playlist_autofill_checkbox = ft.Checkbox(
             value=True,
             label="Auto-fill start video and time",
-            fill_color=constants.colors.accent,
+            fill_color=checkbox_fill,
             check_color=constants.colors.text,
             active_color=constants.colors.accent,
+            border_side=checkbox_border,
+            shape=checkbox_shape,
+            overlay_color=ft.Colors.TRANSPARENT,
+            hover_color=ft.Colors.TRANSPARENT,
+            focus_color=ft.Colors.TRANSPARENT,
+            label_style=ft.TextStyle(
+                size=constants.font_sizes.body,
+                color=constants.colors.text_muted,
+                weight=ft.FontWeight.W_600,
+            ),
+        )
+        self.playlist_done_today_checkbox = ft.Checkbox(
+            value=False,
+            visible=False,
+            label="Done for today",
+            fill_color=checkbox_fill,
+            check_color=constants.colors.text,
+            active_color=constants.colors.accent,
+            border_side=checkbox_border,
+            shape=checkbox_shape,
+            overlay_color=ft.Colors.TRANSPARENT,
+            hover_color=ft.Colors.TRANSPARENT,
+            focus_color=ft.Colors.TRANSPARENT,
             label_style=ft.TextStyle(
                 size=constants.font_sizes.body,
                 color=constants.colors.text_muted,
