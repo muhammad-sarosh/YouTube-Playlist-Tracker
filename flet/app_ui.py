@@ -481,6 +481,56 @@ class AppUIBuildMixin:
             bottom_left=constants.sizes.control_radius if is_last else 0,
             bottom_right=constants.sizes.control_radius if is_last else 0,
         )
+        label = ft.Text(
+            playlist.name,
+            expand=True,
+            color=constants.colors.text,
+            size=constants.font_sizes.body,
+            weight=ft.FontWeight.W_500,
+            overflow=ft.TextOverflow.ELLIPSIS,
+            no_wrap=True,
+        )
+        select_area = ft.Container(
+            expand=True,
+            alignment=ft.alignment.center_left,
+            content=label,
+            on_click=lambda _event, chosen=playlist, selected_mode=mode: self.apply_saved_playlist(
+                selected_mode, chosen
+            ),
+        )
+
+        edit_icon = ft.Icon(
+            ft.Icons.EDIT_ROUNDED,
+            size=13,
+            color=constants.colors.text_muted,
+        )
+        edit_button = ft.Container(
+            width=22,
+            height=22,
+            border_radius=7,
+            alignment=ft.alignment.center,
+            tooltip="Edit playlist",
+            content=edit_icon,
+            on_click=lambda _event, chosen=playlist: self.show_edit_playlist_screen(
+                chosen.id
+            ),
+        )
+
+        def _handle_edit_hover(event, control=edit_button, icon=edit_icon):
+            hovered = str(event.data).lower() == "true"
+            control.bgcolor = (
+                constants.colors.surface_hover
+                if hovered
+                else ft.Colors.TRANSPARENT
+            )
+            icon.color = (
+                constants.colors.text if hovered else constants.colors.text_muted
+            )
+            if control.page is not None:
+                control.update()
+
+        edit_button.on_hover = _handle_edit_hover
+
         row = ft.Container(
             height=constants.sizes.input_height,
             bgcolor=constants.colors.accent_soft if selected else constants.colors.surface,
@@ -488,15 +538,7 @@ class AppUIBuildMixin:
             padding=ft.Padding(14, 11, 14, 11),
             content=ft.Row(
                 controls=[
-                    ft.Text(
-                        playlist.name,
-                        expand=True,
-                        color=constants.colors.text,
-                        size=constants.font_sizes.body,
-                        weight=ft.FontWeight.W_500,
-                        overflow=ft.TextOverflow.ELLIPSIS,
-                        no_wrap=True,
-                    ),
+                    select_area,
                     *(
                         [
                             ft.Icon(
@@ -520,12 +562,10 @@ class AppUIBuildMixin:
                         if today_watch_seconds is not None
                         else []
                     ),
+                    edit_button,
                 ],
                 spacing=8,
                 vertical_alignment=ft.CrossAxisAlignment.CENTER,
-            ),
-            on_click=lambda _event, chosen=playlist, selected_mode=mode: self.apply_saved_playlist(
-                selected_mode, chosen
             ),
         )
 
