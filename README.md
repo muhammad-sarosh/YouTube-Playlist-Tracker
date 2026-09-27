@@ -9,6 +9,21 @@ Instead of manually adding up video lengths, this app lets you paste a playlist 
 
 The app is built with Python and Flet and is intended to be used through the Windows release download.
 
+## Screenshots
+
+<table>
+  <tr>
+    <td align="center"><strong>Watch Duration</strong><br><img src="docs/screenshots/watch-duration.png" alt="Watch Duration mode" width="240"></td>
+    <td align="center"><strong>Playlist Picker</strong><br><img src="docs/screenshots/playlist-dropdown.png" alt="Saved playlist dropdown with watch-goal flags and quick edit buttons" width="240"></td>
+    <td align="center"><strong>Playlist Length</strong><br><img src="docs/screenshots/playlist-length.png" alt="Playlist Length mode" width="240"></td>
+  </tr>
+  <tr>
+    <td align="center"><strong>Saved Playlists</strong><br><img src="docs/screenshots/saved-playlists.png" alt="Saved Playlists screen" width="240"></td>
+    <td align="center"><strong>Edit Playlist</strong><br><img src="docs/screenshots/edit-playlist.png" alt="Edit Playlist screen" width="240"></td>
+    <td align="center"><strong>Watch Time by Day</strong><br><img src="docs/screenshots/watch-time-by-day.png" alt="Watch Time by Day screen" width="240"></td>
+  </tr>
+</table>
+
 ## Download
 
 The normal way to use this project is through the `.exe` on the repo's Releases page.
